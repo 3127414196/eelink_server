@@ -76,44 +76,33 @@ static void obj_table_save()
     //g_hash_table_foreach(object_table, obj_update, NULL);
 }
 
-typedef struct 
+typedef struct
 {
-    const void *msg;
-    SESSION *session;
-    MANAGER_SEND_PROC proc;
-}MANAGER_SEND_S;
+    void *msg;
+    SESSION_MANAGER *sessionManager;
+    MANAGER_SENDIMEIDATA proc;
+}MANAGER_SEND_DATA;
 
 //it is a callback for sending imei data to manager
-static void obj_sendImeiData2Manager(gpointer key, gpointer value, gpointer user_data)
+static void obj_sendImeiData2manager(gpointer key, gpointer value, gpointer user_data)
 {
     key = key;
     OBJECT *obj = (OBJECT *)value;
-    MANAGER_SEND_S *pstManagerSend = (MANAGER_SEND_S *)user_data;
+    MANAGER_SEND_DATA *pstManagerSend = (MANAGER_SEND_DATA *)user_data;
 
-    LOG_INFO("obj_sendImeiData2Manager imei(%s)", obj->IMEI);
-
-    //manager_sendImeiData
-    pstManagerSend->proc(pstManagerSend->msg, pstManagerSend->session, obj->IMEI, obj->session, obj->timestamp, obj->lon, obj->lat, obj->speed, obj->course);
-
+    pstManagerSend->proc(pstManagerSend->msg, pstManagerSend->sessionManager, obj->IMEI, obj->session ? 1 : 2, obj->version, obj->timestamp, obj->lat, obj->lon, obj->speed, obj->course);
     return;
 }
 
-void obj_sendImeiData2ManagerLoop(const void *msg, SESSION *session, MANAGER_SEND_PROC proc)
+void obj_sendImeiData2ManagerLoop(const void *msg, SESSION_MANAGER *sessionManager, MANAGER_SENDIMEIDATA func)
 {
-    MANAGER_SEND_S *pstManagerSend = malloc(sizeof(MANAGER_SEND_S));
-    if(!pstManagerSend)
-    {
-        return;
-    }
-
-    LOG_INFO("obj_sendImeiData2ManagerLoop");
+    MANAGER_SEND_DATA *pstManagerSend = malloc(sizeof(MANAGER_SEND_DATA));
 
     pstManagerSend->msg = msg;
-    pstManagerSend->session = session;
-    pstManagerSend->proc = proc; //manager_sendImeiData
-    
-    /* foreach hash */
-    g_hash_table_foreach(object_table, obj_sendImeiData2Manager, pstManagerSend);
+    pstManagerSend->proc = func;
+    pstManagerSend->sessionManager = sessionManager;
+
+    g_hash_table_foreach(object_table, obj_sendImeiData2manager, pstManagerSend);
 
     free(pstManagerSend);
     return;

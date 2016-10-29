@@ -10,6 +10,7 @@
 
 #include "macro.h"
 #include "session.h"
+#include "session_manager.h"
 
 
 typedef struct
@@ -71,9 +72,9 @@ typedef struct
     void *session;
 } OBJECT;
 
+typedef int (*MANAGER_SENDIMEIDATA)(const void *msg, SESSION_MANAGER *sessionManager, const char*imei, const char on_offline, int version, int timestamp, float lat, float lon, char speed, short course);
 
-typedef int (*MANAGER_SEND_PROC)(const void *msg, SESSION *ManagerSession, const char *imei, SESSION *deviceSession, int timestamp, float lon, float lat, char speed, short course);
-void obj_sendImeiData2ManagerLoop(const void *msg, SESSION *session, MANAGER_SEND_PROC proc);
+void obj_sendImeiData2ManagerLoop(const void *msg, SESSION_MANAGER *sessionManager, MANAGER_SENDIMEIDATA func);
 
 void obj_table_initial(void (*mqtt_sub)(const char *), int ObjectType);
 void obj_table_GPSinitial(void);

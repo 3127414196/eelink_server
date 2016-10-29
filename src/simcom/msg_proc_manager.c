@@ -339,6 +339,31 @@ static int manager_getAT(const void *msg, SESSION_MANAGER *sessionManager)
     return 0;
 }
 
+static int manager_sendimeiData(const void *msg, SESSION_MANAGER *sessionManager, const char*imei, const char on_offline, int version, int timestamp, float lat, float lon, char speed, short course)
+{
+    MANAGER_MSG_IMEI_DATA_RSP *rsp = (MANAGER_MSG_IMEI_DATA_RSP *)alloc_manager_rspMsg((const MANAGER_MSG_HEADER *)msg);
+
+    rsp->imei_data.online_offline = on_offline;
+    rsp->imei_data.version = htonl(version);
+
+    memcpy(rsp->imei_data.IMEI, imei, 15);
+    rsp->imei_data.gps.timestamp = htonl(timestamp);
+    rsp->imei_data.gps.latitude = lat;
+    rsp->imei_data.gps.longitude = lon;
+    rsp->imei_data.gps.speed = speed;
+    rsp->imei_data.gps.course = htons(course);
+
+    manager_sendMsg(rsp, sizeof(MANAGER_MSG_IMEI_DATA_RSP), sessionManager);
+    return 0;
+}
+
+static int manager_getImeiData(const void *msg, SESSION_MANAGER *sessionManager)
+{
+    obj_sendImeiData2ManagerLoop(msg, sessionManager, manager_sendimeiData);
+    return 0;
+}
+
+
 static int manager_getGSM(const void *msg, SESSION_MANAGER *sessionManager)
 {
     const MANAGER_MSG_GET_GSM_REQ *req = (const MANAGER_MSG_GET_GSM_REQ *)msg;
@@ -684,6 +709,7 @@ static MANAGER_MSG_PROC_MAP msgProcs[] =
     {MANAGER_CMD_REBOOT,            manager_reboot},
     {MANAGER_CMD_UPGRADE,           manager_upgrade},
     {MANAGER_CMD_GET_AT,            manager_getAT},
+    {MANAGER_CMD_GET_IMEIDATA,      manager_getImeiData},
 };
 
 static int handle_one_msg(const void *m, SESSION_MANAGER *ctx)

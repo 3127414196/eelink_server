@@ -23,7 +23,8 @@ enum
     MANAGER_CMD_GET_BATTERY     =  8,
     MANAGER_CMD_REBOOT          =  9,
     MANAGER_CMD_UPGRADE         = 10,
-    MANAGER_CMD_GET_AT       = 11,
+    MANAGER_CMD_GET_AT          = 11,
+    MANAGER_CMD_GET_IMEIDATA    = 12,
 };
 
 #pragma pack(push, 1)
